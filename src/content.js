@@ -74,6 +74,11 @@
     }
   }
 
+  function onYouTubeNavigationEvent() {
+    currentUrl = location.href;
+    scheduleFullApply();
+  }
+
   function setupObservers() {
     const observerRoot = document.querySelector("ytd-app") || document.documentElement || document.body;
     const observer = new MutationObserver((records) => {
@@ -96,10 +101,32 @@
       subtree: true
     });
 
-    document.addEventListener("yt-navigate-finish", onRouteMaybeChanged, true);
+    document.addEventListener("yt-navigate-finish", onYouTubeNavigationEvent, true);
+    document.addEventListener("yt-page-data-updated", onYouTubeNavigationEvent, true);
     window.addEventListener("popstate", onRouteMaybeChanged, true);
     window.addEventListener("hashchange", onRouteMaybeChanged, true);
     setInterval(onRouteMaybeChanged, 5000);
+  }
+
+  function setupStartupStabilityPass() {
+    // YouTube mounts some sections after initial idle; run a few full passes early.
+    [350, 1200, 2600].forEach((delayMs) => {
+      setTimeout(() => {
+        scheduleFullApply();
+      }, delayMs);
+    });
+
+    window.addEventListener(
+      "load",
+      () => {
+        scheduleFullApply();
+      },
+      { once: true }
+    );
+
+    window.addEventListener("pageshow", () => {
+      scheduleFullApply();
+    });
   }
 
   function setupMessageListener() {
@@ -127,6 +154,7 @@
     cachedSettings = await storageApi.getSettings();
     await runRules("full");
     setupObservers();
+    setupStartupStabilityPass();
     setupMessageListener();
     setupStorageListener();
   }

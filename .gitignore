@@ -1,0 +1,27 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Dependencies / builds
+node_modules/
+dist/
+build/
+out/
+coverage/
+*.zip
+
+# Env / secrets
+.env
+.env.*
+
+# IDE / tooling metadata
+.vscode/
+.idea/
+.cursor/
