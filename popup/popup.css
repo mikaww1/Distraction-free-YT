@@ -6,8 +6,8 @@ body {
 }
 
 .popup {
-  width: 320px;
-  padding: 14px;
+  width: 280px;
+  padding: 12px;
   background: linear-gradient(180deg, #171b22, #12161d);
   border: 1px solid #222938;
   border-radius: 12px;
@@ -30,7 +30,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
 }
 
 .header-icon {
@@ -44,7 +44,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 8px 0;
+  padding: 6px 0;
   font-size: 13px;
   border-bottom: 1px solid #202738;
 }
