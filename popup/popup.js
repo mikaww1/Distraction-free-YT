@@ -13,19 +13,15 @@
     "hideAds"
   ];
 
-  const statusText = document.getElementById("statusText");
+  const filterChip = document.getElementById("filterChip");
   const controls = toggleKeys.reduce((acc, key) => {
     acc[key] = document.getElementById(key);
     return acc;
   }, {});
 
-  function setStatus(message) {
-    statusText.textContent = message;
-    setTimeout(() => {
-      if (statusText.textContent === message) {
-        statusText.textContent = "";
-      }
-    }, 1200);
+  function updateChip() {
+    const count = toggleKeys.filter((key) => controls[key] && controls[key].checked).length;
+    filterChip.textContent = count === 1 ? "1 filter active" : count + " filters active";
   }
 
   function readFormValues() {
@@ -61,7 +57,6 @@
       extApi.tabs.sendMessage(activeTab.id, message, () => {
         const error = extApi.runtime && extApi.runtime.lastError;
         if (error) {
-          // This can happen if the tab navigated and content script is not attached yet.
           return;
         }
       });
@@ -77,12 +72,13 @@
         controls[key].checked = Boolean(settings[key]);
       }
     });
+    updateChip();
   }
 
   async function onToggleChange() {
+    updateChip();
     const next = await storageApi.updateSettings(readFormValues());
     await notifyActiveYoutubeTab(next);
-    setStatus("Saved");
   }
 
   toggleKeys.forEach((key) => {
