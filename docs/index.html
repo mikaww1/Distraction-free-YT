@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Distraction Free YouTube — Hide Shorts, Ads & Recommendations</title>
+  <meta name="description" content="Stop wasting hours on YouTube. Hide Shorts, recommendations, comments and ads with one click. Free Chrome extension. Take back your time." />
+  <meta name="keywords" content="hide youtube shorts, remove youtube recommendations, youtube focus mode, distraction free youtube, chrome extension, hide youtube ads, clean youtube, youtube blocker" />
+  <meta property="og:title" content="Distraction Free YouTube" />
+  <meta property="og:description" content="You opened YouTube to watch one thing. You know how this ends. Take back control." />
+  <meta property="og:type" content="website" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --red: #ff2200;
+      --red-dim: #cc1a00;
+      --black: #080808;
+      --dark: #0f0f0f;
+      --card: #141414;
+      --border: #1f1f1f;
+      --text: #e8e8e8;
+      --muted: #555;
+      --muted2: #333;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--black);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* noise overlay */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.4;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 48px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(8,8,8,0.85);
+      backdrop-filter: blur(12px);
+    }
+    .nav-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.08em;
+      color: #fff;
+    }
+    .nav-logo span { color: var(--red); }
+    .nav-cta {
+      background: var(--red);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 9px 20px;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+      transition: background 0.2s;
+    }
+    .nav-cta:hover { background: var(--red-dim); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 120px 24px 80px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-glow {
+      position: absolute;
+      width: 600px; height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,34,0,0.12) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -60%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--red);
+      border: 1px solid rgba(255,34,0,0.3);
+      padding: 5px 14px;
+      border-radius: 2px;
+      margin-bottom: 32px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(64px, 10vw, 130px);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      color: #fff;
+      max-width: 900px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .hero h1 em {
+      font-style: normal;
+      color: var(--red);
+    }
+
+    .hero-sub {
+      margin-top: 28px;
+      font-size: clamp(16px, 2vw, 20px);
+      color: var(--muted);
+      max-width: 520px;
+      font-weight: 300;
+      line-height: 1.7;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .hero-actions {
+      margin-top: 44px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .btn-primary {
+      background: var(--red);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      padding: 14px 32px;
+      border-radius: 4px;
+      letter-spacing: 0.02em;
+      transition: background 0.2s, transform 0.15s;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .btn-primary:hover { background: var(--red-dim); transform: translateY(-1px); }
+
+    .btn-secondary {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+    .btn-secondary:hover { color: var(--text); }
+
+    .hero-note {
+      margin-top: 16px;
+      font-size: 12px;
+      color: var(--muted2);
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    /* TICKER */
+    .ticker {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 0;
+      overflow: hidden;
+      white-space: nowrap;
+      background: var(--dark);
+    }
+    .ticker-inner {
+      display: inline-flex;
+      gap: 48px;
+      animation: ticker 18s linear infinite;
+    }
+    .ticker-item {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted2);
+    }
+    .ticker-item span { color: var(--red); margin-right: 48px; }
+
+    /* TRUTH SECTION */
+    .truth {
+      padding: 100px 24px;
+      max-width: 800px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .truth h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(40px, 6vw, 72px);
+      line-height: 1;
+      letter-spacing: 0.03em;
+      color: #fff;
+      margin-bottom: 24px;
+    }
+    .truth h2 em { font-style: normal; color: var(--red); }
+    .truth p {
+      font-size: 18px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.8;
+      max-width: 580px;
+      margin: 0 auto;
+    }
+
+    /* FEATURES */
+    .features {
+      padding: 80px 24px;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .features-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--red);
+      margin-bottom: 48px;
+      text-align: center;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .feature-card {
+      background: var(--card);
+      padding: 36px 32px;
+      transition: background 0.2s;
+    }
+    .feature-card:hover { background: #1a1a1a; }
+    .feature-icon {
+      width: 36px; height: 36px;
+      margin-bottom: 20px;
+      color: var(--red);
+    }
+    .feature-card h3 {
+      font-size: 17px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .feature-card p {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.7;
+      font-weight: 300;
+    }
+
+    /* STATS */
+    .stats {
+      padding: 80px 24px;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: center;
+      gap: 80px;
+      flex-wrap: wrap;
+      background: var(--dark);
+    }
+    .stat { text-align: center; }
+    .stat-number {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 64px;
+      line-height: 1;
+      color: #fff;
+      letter-spacing: 0.02em;
+    }
+    .stat-number span { color: var(--red); }
+    .stat-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+      font-weight: 300;
+      letter-spacing: 0.04em;
+    }
+
+    /* HOW IT WORKS */
+    .how {
+      padding: 100px 24px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .how h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(36px, 5vw, 60px);
+      letter-spacing: 0.03em;
+      color: #fff;
+      margin-bottom: 56px;
+      text-align: center;
+    }
+    .steps { display: flex; flex-direction: column; gap: 0; }
+    .step {
+      display: flex;
+      gap: 28px;
+      align-items: flex-start;
+      padding: 32px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .step:last-child { border-bottom: none; }
+    .step-num {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 48px;
+      color: var(--muted2);
+      line-height: 1;
+      flex-shrink: 0;
+      width: 48px;
+    }
+    .step-content h3 {
+      font-size: 18px;
+      font-weight: 600;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .step-content p {
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 300;
+      line-height: 1.7;
+    }
+
+    /* CTA BOTTOM */
+    .cta-section {
+      padding: 120px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      width: 500px; height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,34,0,0.08) 0%, transparent 70%);
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+    }
+    .cta-section h2 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(48px, 8vw, 100px);
+      line-height: 0.95;
+      letter-spacing: 0.02em;
+      color: #fff;
+      margin-bottom: 20px;
+    }
+    .cta-section h2 em { font-style: normal; color: var(--red); }
+    .cta-section p {
+      font-size: 16px;
+      color: var(--muted);
+      margin-bottom: 40px;
+      font-weight: 300;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 28px 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-logo {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 18px;
+      letter-spacing: 0.08em;
+      color: var(--muted2);
+    }
+    .footer-logo span { color: var(--red); }
+    footer p {
+      font-size: 12px;
+      color: var(--muted2);
+    }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes ticker {
+      from { transform: translateX(0); }
+      to   { transform: translateX(-50%); }
+    }
+
+    /* SCROLL REVEAL */
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+    .reveal.visible {
+      opacity: 1;
+      transform: none;
+    }
+
+    @media (max-width: 600px) {
+      nav { padding: 16px 20px; }
+      .stats { gap: 40px; }
+      footer { padding: 24px 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <div class="nav-logo">Distraction Free <span>YouTube</span></div>
+    <a href="https://chromewebstore.google.com/detail/distraction-free-youtube/ckkcdcieljicflmkokdekbfpkclmmibp" class="nav-cta" target="_blank">Add to Chrome — Free</a>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-eyebrow">Chrome Extension</div>
+    <h1>You opened YouTube<br>to watch <em>one thing.</em></h1>
+    <p class="hero-sub">You know how this ends. Shorts. Recommended videos. Comments. Two hours gone. It doesn't have to be this way.</p>
+    <div class="hero-actions">
+      <a href="https://chromewebstore.google.com/detail/distraction-free-youtube/ckkcdcieljicflmkokdekbfpkclmmibp" class="btn-primary" target="_blank">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/><circle cx="12" cy="12" r="4" fill="currentColor" stroke="none"/></svg>
+        Add to Chrome — It's Free
+      </a>
+      <a href="#how" class="btn-secondary">How it works →</a>
+    </div>
+    <p class="hero-note">No account. No tracking. Nothing leaves your browser.</p>
+  </section>
+
+  <div class="ticker">
+    <div class="ticker-inner">
+      <span class="ticker-item">Hide Shorts <span>✕</span></span>
+      <span class="ticker-item">No Recommendations <span>✕</span></span>
+      <span class="ticker-item">Hide Comments <span>✕</span></span>
+      <span class="ticker-item">Block Ads <span>✕</span></span>
+      <span class="ticker-item">Your Rules <span>✕</span></span>
+      <span class="ticker-item">Hide Shorts <span>✕</span></span>
+      <span class="ticker-item">No Recommendations <span>✕</span></span>
+      <span class="ticker-item">Hide Comments <span>✕</span></span>
+      <span class="ticker-item">Block Ads <span>✕</span></span>
+      <span class="ticker-item">Your Rules <span>✕</span></span>
+    </div>
+  </div>
+
+  <section class="truth reveal">
+    <h2>YouTube is <em>designed</em><br>to waste your time.</h2>
+    <p>Every scroll, every autoplay, every "just one more" — it's not an accident. It's a billion-dollar attention machine working against you. This extension works for you instead.</p>
+  </section>
+
+  <section class="features">
+    <p class="features-label reveal">What you can hide</p>
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <h3>Shorts</h3>
+        <p>The infinite scroll that was supposed to take 30 seconds. Gone.</p>
+      </div>
+      <div class="feature-card reveal">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        <h3>Home Recommendations</h3>
+        <p>A feed algorithmically engineered to keep you watching. Removed.</p>
+      </div>
+      <div class="feature-card reveal">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        <h3>Comments</h3>
+        <p>Rabbit holes disguised as conversation. Hidden.</p>
+      </div>
+      <div class="feature-card reveal">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+        <h3>Related Videos</h3>
+        <p>The sidebar that has stolen more hours than anything else online. Gone.</p>
+      </div>
+      <div class="feature-card reveal">
+        <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+        <h3>Ads</h3>
+        <p>You're already paying with your attention. Stop paying twice.</p>
+      </div>
+      <div class="feature-card reveal" style="background: #0f0f0f; display:flex; align-items:center; justify-content:center;">
+        <p style="font-size:13px; color: var(--muted2); text-align:center; line-height:1.8;">Toggle each one<br>independently.<br>Your YouTube.<br><strong style="color:var(--red)">Your rules.</strong></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="stats reveal">
+    <div class="stat">
+      <div class="stat-number">2<span>hrs</span></div>
+      <div class="stat-label">average daily YouTube time per user</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">5<span>×</span></div>
+      <div class="stat-label">more videos watched with autoplay on</div>
+    </div>
+    <div class="stat">
+      <div class="stat-number">0<span>$</span></div>
+      <div class="stat-label">cost to take back your time</div>
+    </div>
+  </div>
+
+  <section class="how" id="how">
+    <h2 class="reveal">How it works</h2>
+    <div class="steps">
+      <div class="step reveal">
+        <div class="step-num">01</div>
+        <div class="step-content">
+          <h3>Install the extension</h3>
+          <p>One click from the Chrome Web Store. No account, no signup, nothing to configure.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">02</div>
+        <div class="step-content">
+          <h3>Choose what to hide</h3>
+          <p>Click the extension icon on any YouTube page. Toggle whatever distracts you. Settings save instantly.</p>
+        </div>
+      </div>
+      <div class="step reveal">
+        <div class="step-num">03</div>
+        <div class="step-content">
+          <h3>Use YouTube on your terms</h3>
+          <p>Watch what you came to watch. Leave when you're done. That's it.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="cta-section reveal">
+    <h2>Stop losing<br><em>your time.</em></h2>
+    <p>Free. Private. One click to install.</p>
+    <a href="https://chromewebstore.google.com/detail/distraction-free-youtube/ckkcdcieljicflmkokdekbfpkclmmibp" class="btn-primary" target="_blank" style="display:inline-flex; font-size:16px; padding:16px 40px;">
+      Add to Chrome — Free
+    </a>
+  </section>
+
+  <footer>
+    <div class="footer-logo">Distraction Free <span>YT</span></div>
+    <p>Free forever. No data collected. No accounts.</p>
+  </footer>
+
+  <script>
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+    }, { threshold: 0.1 });
+    document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+  </script>
+
+</body>
+</html>
