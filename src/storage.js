@@ -4,8 +4,8 @@
 
   const DEFAULT_SETTINGS = {
     schemaVersion: CURRENT_SCHEMA_VERSION,
-    hideShorts: true,
-    hideHomeRecommendations: true,
+    hideShorts: false,
+    hideHomeRecommendations: false,
     hideComments: false,
     hideRecommendations: false,
     hideAds: false,
